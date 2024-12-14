@@ -108,7 +108,7 @@ CFLAGS += $(INCLUDES) $(CWARNS) -O2
 
 # Rules
 .PHONY : all
-all: FreeRTOS-Sim
+all: edf_sim
 
 
 # Fix to place .o files in ODIR
@@ -139,12 +139,12 @@ endif
 
 .PHONY : clean
 clean:
-	@-rm -rf $(ODIR) FreeRTOS-Sim
+	@-rm -rf $(ODIR) edf_sim
 	@echo "--------------"
 	@echo "CLEAN COMPLETE"
 	@echo "--------------"
 
 
 .PHONY: valgrind
-valgrind: FreeRTOS-Sim
-	valgrind.bin --tool=memcheck --leak-check=full --show-reachable=yes --track-fds=yes ./FreeRTOS-Sim
+valgrind: edf_sim
+	valgrind.bin --tool=memcheck --leak-check=full --show-reachable=yes --track-fds=yes ./edf_sim

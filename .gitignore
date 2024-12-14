@@ -5,7 +5,6 @@
 # Prerequisites
 *.d
 
-FreeRTOS-Sim
 # Object files
 *.o
 *.ko
@@ -57,7 +56,5 @@ Mkfile.old
 dkms.conf
 
 # End of https://www.toptal.com/developers/gitignore/api/c
-FreeRTOS-Sim
-FreeRTOS-Sim
-obj/croutine.o
-obj/event_groups.o
+edf_sim
+obj/

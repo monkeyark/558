@@ -7,13 +7,13 @@ FreeRTOS with EDF algorithm scheduling
   
 # Compile And Run
   - ```$ make```
-  - ```$ ./FreeRTOS-Sim```
+  - ```$ ./edf_sim```
 
 # Run without EDF
   - ```$ make clean```
   - set ```configUSE_EDF_SCHEDULER = 0``` in FreeRTOSConfig.h
   - ```$ make```
-  - ```$ ./FreeRTOS-Sim```
+  - ```$ ./edf_sim```
   
  # Results
-  ![Result](results.png)
+  ![Simulation Result](simulation.png)
