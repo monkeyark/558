@@ -95,6 +95,9 @@
 
 
 /* Examples */
+// T1 = (3, 8); T2 = (1, 4); T3 = (1, 4); T4 = (2, 6)
+// T1 = (4, 12); T2 = (3, 9); T3 = (2, 6)
+
 #define Count 20
 #define AFreq 50
 #define Bfreq 80
@@ -106,8 +109,8 @@ void vTask2(void*);
 void vTask3(void*);
 void vTask4(void*);
 #else
-void TSK_A(void* /* parameter */);
-void TSK_B(void* /* parameter */);
+void vTask1(void* /* parameter */);
+void vTask2(void* /* parameter */);
 #endif
 
 
@@ -116,23 +119,6 @@ void vApplicationIdleHook(void);
 int ANumberOfPeriod = 1;
 int BNumberOfPeriod = 1;
 
-int main ( void )
-{
-	/* Creating Two Task Same Priorities and Delay*/
-//	xTaskCreate( vTask1, "Task 1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-//	xTaskCreate( vTask2, "Task 2", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-	/* Creating Two Task Same Priorities and DelayUntil*/
-	#if ( configUSE_EDF_SCHEDULER == 1 )
-	xTaskPeriodicCreate( TSK_A, "Task A", 1000, NULL, 1, NULL, 5 );
-	xTaskPeriodicCreate( TSK_B, "Task B", 1000, NULL, 1, NULL, 8 );
-	#else
-	xTaskCreate( vTask3, "Task 3", 1000, NULL, 1, NULL );
-	xTaskCreate( vTask4, "Task 4", 1000, NULL, 1, NULL );
-	#endif
-
-	vTaskStartScheduler();
-	return 0;
-}
 
 void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
 {
@@ -178,7 +164,7 @@ void vTask4(void* parameter)
     }
 }
 #else
-void TSK_A(void* /* parameter */)
+void vTask1(void* /* parameter */)
 {
     TickType_t xLastWakeTimeA;
     const TickType_t xFrequency = AFreq; //tsk A frequency
@@ -186,7 +172,7 @@ void TSK_A(void* /* parameter */)
     xLastWakeTimeA = 0;
     while(1)
     {	
-        printf("Tick %3d: Task A In with start  %3d\n", xTaskGetTickCount (), AFreq * (ANumberOfPeriod - 1));
+        printf("Tick %3d: Task 1 In with start  %3d\n", xTaskGetTickCount (), AFreq * (ANumberOfPeriod - 1));
         TickType_t xTime = xTaskGetTickCount ();
         TickType_t x;
         while(count != 0)
@@ -197,14 +183,14 @@ void TSK_A(void* /* parameter */)
                 count--;
             }
         }
-        printf("Tick %3d: Task A Out with deadLine  %3d\n", xTaskGetTickCount (), AFreq* ANumberOfPeriod);
+        printf("Tick %3d: Task 1 Out with deadLine  %3d\n", xTaskGetTickCount (), AFreq* ANumberOfPeriod);
         ANumberOfPeriod += 1;
         count = Count;
         vTaskDelayUntil( &xLastWakeTimeA, xFrequency );
     }
     
 }
-void TSK_B(void* /* parameter */)
+void vTask2(void* /* parameter */)
 {
     TickType_t xLastWakeTimeB;
     const TickType_t xFrequency = Bfreq; //tsk B frequency
@@ -212,7 +198,7 @@ void TSK_B(void* /* parameter */)
     xLastWakeTimeB = 0;
     while(1)
     {
-        printf("Tick %3d: Task B In with start  %3d\n", xTaskGetTickCount (), Bfreq*(BNumberOfPeriod - 1));
+        printf("Tick %3d: Task 2 In with start  %3d\n", xTaskGetTickCount (), Bfreq*(BNumberOfPeriod - 1));
         TickType_t xTime = xTaskGetTickCount ();
         TickType_t x;
         while(count != 0)
@@ -223,7 +209,7 @@ void TSK_B(void* /* parameter */)
                 count--;
             }
         }
-        printf("Tick %3d: Task B Out with deadLine  %3d\n", xTaskGetTickCount (), Bfreq*BNumberOfPeriod);
+        printf("Tick %3d: Task 2 Out with deadLine  %3d\n", xTaskGetTickCount (), Bfreq*BNumberOfPeriod);
         BNumberOfPeriod += 1;
         count = 2*Count;
         vTaskDelayUntil( &xLastWakeTimeB, xFrequency );
@@ -239,3 +225,21 @@ void vApplicationIdleHook(void)
 //	printf("Idle\r\n");
 }
 /*-----------------------------------------------------------*/
+
+int main ( void )
+{
+	/* Creating Two Task Same Priorities and Delay*/
+//	xTaskCreate( vTask1, "Task 1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+//	xTaskCreate( vTask2, "Task 2", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+	/* Creating Two Task Same Priorities and DelayUntil*/
+	#if ( configUSE_EDF_SCHEDULER == 1 )
+	xTaskPeriodicCreate( vTask1, "vTask1", 1000, NULL, 1, NULL, 5 );
+	xTaskPeriodicCreate( vTask2, "vTask2", 1000, NULL, 1, NULL, 8 );
+	#else
+	xTaskCreate( vTask1, "Task 1", 1000, NULL, 1, NULL );
+	xTaskCreate( vTask2, "Task 2", 1000, NULL, 1, NULL );
+	#endif
+
+	vTaskStartScheduler();
+	return 0;
+}

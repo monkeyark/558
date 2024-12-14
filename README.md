@@ -3,7 +3,8 @@
 FreeRTOS with EDF algorithm scheduling
 
 # Requirements
-  - ```$ sudo dnf install glibc-devel.i686```
+The glibc package contains the object files necessary for developing programs that use the standard C libraries.
+  - ```$ sudo dnf install glibc-devel```
   
 # Compile And Run
   - ```$ make```

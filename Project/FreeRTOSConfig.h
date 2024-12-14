@@ -1,6 +1,12 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+/* Set to 1 to enable Earliest Deadline First (EDF) scheduling algorithm instead of
+ * the default fixed-priority scheduling. EDF is a dynamic scheduling policy that 
+ * assigns priorities based on task deadlines, scheduling the task with the earliest
+ * deadline first. */
+#define configUSE_EDF_SCHEDULER					1
+
 /*-----------------------------------------------------------
  * Application specific definitions.
  *
@@ -65,12 +71,6 @@ functions anyway. */
 #define INCLUDE_xTimerPendFunctionCall			1
 #define INCLUDE_xTaskAbortDelay					1
 #define INCLUDE_xTaskGetHandle					1
-
-/* Set to 1 to enable Earliest Deadline First (EDF) scheduling algorithm instead of
- * the default fixed-priority scheduling. EDF is a dynamic scheduling policy that 
- * assigns priorities based on task deadlines, scheduling the task with the earliest
- * deadline first. */
-#define configUSE_EDF_SCHEDULER					1
 
 /* It is a good idea to define configASSERT() while developing.  configASSERT()
 uses the same semantics as the standard C assert() macro. */

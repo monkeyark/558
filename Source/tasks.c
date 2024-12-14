@@ -3571,17 +3571,18 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
 
 static void prvInitialiseTaskLists( void )
 {
-UBaseType_t uxPriority;
+	// UBaseType_t uxPriority;
 	#if (configUSE_EDF_SCHEDULER == 1)
 	{
 		vListInitialise( &xReadyTasksListEDF );
 	}
 	#else
 	{
-	for( uxPriority = ( UBaseType_t ) 0U; uxPriority < ( UBaseType_t ) configMAX_PRIORITIES; uxPriority++ )
-	{
-		vListInitialise( &( pxReadyTasksLists[ uxPriority ] ) );
-	}
+		UBaseType_t uxPriority;
+		for( uxPriority = ( UBaseType_t ) 0U; uxPriority < ( UBaseType_t ) configMAX_PRIORITIES; uxPriority++ )
+		{
+			vListInitialise( &( pxReadyTasksLists[ uxPriority ] ) );
+		}
 	}
 	#endif
 
