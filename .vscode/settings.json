@@ -1,0 +1,13 @@
+{
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/Source/include",
+        "${workspaceFolder}/Source/portable/GCC/POSIX",
+        "${workspaceFolder}/Source/portable/MemMang"
+    ],
+    "files.associations": {
+        "freertos.h": "c",
+        "task.h": "c",
+        "portmacro.h": "c"
+    }
+} 

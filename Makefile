@@ -125,7 +125,7 @@ else
 	@$(CC) $(CFLAGS) -c -o $@ $<
 endif
 
-FreeRTOS-Sim: $(_OBJS)
+edf_sim: $(_OBJS)
 	@echo ">> Linking $@..."
 ifeq ($(verbose),1)
 	$(CC) $(CFLAGS) $^ $(LINKFLAGS) $(LIBS) -o $@
