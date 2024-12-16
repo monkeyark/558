@@ -1,4 +1,6 @@
 {
+    "editor.insertSpaces": false,
+    "editor.tabSize": 4,
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/**",
         "${workspaceFolder}/FreeRTOS_core/include",
@@ -10,4 +12,4 @@
         "task.h": "c",
         "portmacro.h": "c"
     }
-} 
+}
