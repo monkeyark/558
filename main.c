@@ -188,7 +188,6 @@ void vTask1(void* /* parameter */)
         count = Count;
         vTaskDelayUntil( &xLastWakeTimeA, xFrequency );
     }
-    
 }
 void vTask2(void* /* parameter */)
 {
@@ -214,7 +213,6 @@ void vTask2(void* /* parameter */)
         count = 2*Count;
         vTaskDelayUntil( &xLastWakeTimeB, xFrequency );
     }
-    
 }
 #endif
 
@@ -231,6 +229,7 @@ int main ( void )
 	/* Creating Two Task Same Priorities and Delay*/
 //	xTaskCreate( vTask1, "Task 1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
 //	xTaskCreate( vTask2, "Task 2", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+
 	/* Creating Two Task Same Priorities and DelayUntil*/
 	#if ( configUSE_EDF_SCHEDULER == 1 )
 	xTaskPeriodicCreate( vTask1, "vTask1", 1000, NULL, 1, NULL, 5 );

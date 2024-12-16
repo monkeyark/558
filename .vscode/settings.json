@@ -1,9 +1,9 @@
 {
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/**",
-        "${workspaceFolder}/Source/include",
-        "${workspaceFolder}/Source/portable/GCC/POSIX",
-        "${workspaceFolder}/Source/portable/MemMang"
+        "${workspaceFolder}/FreeRTOS_core/include",
+        "${workspaceFolder}/FreeRTOS_core/portable/GCC/POSIX",
+        "${workspaceFolder}/FreeRTOS_core/portable/MemMang"
     ],
     "files.associations": {
         "freertos.h": "c",
