@@ -14,15 +14,18 @@ is normally only used on very memory limited systems.
 + The FreeRTOS_core/Portable directory contains the files that are specific to 
 a particular microcontroller and or compiler.
 
-+ The FreeRTOS/FreeRTOS_core/include directory contains the real time kernel header 
++ The FreeRTOS_core/include directory contains the real time kernel header 
 files.
 
 See the readme file in the FreeRTOS_core/Portable directory for more 
 information.
 
++ The FreeRTOS is customized using a configuration file called FreeRTOSConfig.h. 
+
+
 # Requirements
-The glibc package contains the object files necessary for developing programs that use the standard C libraries.
-  - ```$ sudo dnf install glibc-devel```
+The 32-bit glibc package contains the object files necessary for developing programs that use the standard C libraries.
+  - ```$ sudo dnf install glibc-devel.i686```
   
 # Compile And Run
   - ```$ make```
@@ -33,6 +36,4 @@ The glibc package contains the object files necessary for developing programs th
   - set ```configUSE_EDF_SCHEDULER = 0``` in FreeRTOSConfig.h
   - ```$ make```
   - ```$ ./edf_sim```
-  
- # Results
-  ![Simulation Result](simulation.png)
+
