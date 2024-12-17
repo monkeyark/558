@@ -26,37 +26,58 @@
 
 
 /* Examples */
-// T1 = (3, 8); T2 = (1, 4); T3 = (1, 4); T4 = (2, 6)
 // T1 = (4, 12); T2 = (3, 9); T3 = (2, 6)
+// T4 = (3, 8); T5 = (1, 4); T6 = (1, 4); T7 = (2, 6)
 
-#define Count 20
-#define AFreq 50
-#define Bfreq 80
+#define TickScalar 100
+
+#define ComputT1 4
+#define ComputT2 3
+#define ComputT3 2
+
+#define ComputT4 3
+#define ComputT5 1
+#define ComputT6 1
+#define ComputT7 2
+
+#define FreqT1 12
+#define FreqT2 9
+#define FreqT3 6
+
+#define FreqT4 8
+#define FreqT5 4
+#define FreqT6 4
+#define FreqT7 6
+
 
 /* --------------------------------------------- */
-#if ( configUSE_EDF_SCHEDULER == 0 )
-void vTask1(void*);
-void vTask2(void*);
-void vTask3(void*);
-void vTask4(void*);
-#else
+
 void vTask1(void* /* parameter */);
 void vTask2(void* /* parameter */);
-#endif
+void vTask3(void* /* parameter */);
+void vTask4(void* /* parameter */);
+void vTask5(void* /* parameter */);
+void vTask6(void* /* parameter */);
+void vTask7(void* /* parameter */);
 
 
 void vApplicationIdleHook(void);
 
-int ANumberOfPeriod = 1;
-int BNumberOfPeriod = 1;
+int NumberOfPeriodT1 = 1;
+int NumberOfPeriodT2 = 1;
+int NumberOfPeriodT3 = 1;
+int NumberOfPeriodT4 = 1;
+int NumberOfPeriodT5 = 1;
+int NumberOfPeriodT6 = 1;
+int NumberOfPeriodT7 = 1;
 
 
 void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
 {
- 	taskENTER_CRITICAL();
+	taskENTER_CRITICAL();
 	{
-        printf("[ASSERT] %s:%lu\n", pcFileName, ulLine);
-        fflush(stdout);
+		printf("[ASSERT] %s:%lu\n", pcFileName, ulLine);
+		fflush(stdout);
 	}
 	taskEXIT_CRITICAL();
 	exit(-1);
@@ -66,85 +87,123 @@ void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
 #if ( configUSE_EDF_SCHEDULER == 0 )
 void vTask1(void* parameter)
 {
-    while(1){
-        printf("Task 1\n");
+	while(1){
+		printf("Task 1\n");
 		vTaskDelay(pdMS_TO_TICKS(250));
-    }
+	}
 }
 void vTask2(void* parameter)
 {
-    while(1){
-        printf("Task 2\n");
-        vTaskDelay(pdMS_TO_TICKS(250));
-    }
+	while(1){
+		printf("Task 2\n");
+		vTaskDelay(pdMS_TO_TICKS(250));
+	}
 }
 void vTask3(void* parameter)
 {
 	TickType_t xLastWaketime = xTaskGetTickCount();
-    while(1){
-        printf("Task 3 with 250ms\n");
+	while(1){
+		printf("Task 3 with 250ms\n");
 		vTaskDelayUntil(&xLastWaketime, pdMS_TO_TICKS(250));
-    }
+	}
 }
 void vTask4(void* parameter)
 {
 	TickType_t xLastWaketime = xTaskGetTickCount();
-    while(1){
-        printf("Task 4 with 300ms\n");
-        vTaskDelayUntil(&xLastWaketime, pdMS_TO_TICKS(300));
-    }
+	while(1){
+		printf("Task 4 with 300ms\n");
+		vTaskDelayUntil(&xLastWaketime, pdMS_TO_TICKS(300));
+	}
 }
 #else
 void vTask1(void* /* parameter */)
 {
-    TickType_t xLastWakeTimeA;
-    const TickType_t xFrequency = AFreq; //tsk A frequency
-    volatile int count = Count;     //tsk A capacity
-    xLastWakeTimeA = 0;
-    while(1)
-    {	
-        printf("Tick %3d: Task 1 In with start  %3d\n", xTaskGetTickCount (), AFreq * (ANumberOfPeriod - 1));
-        TickType_t xTime = xTaskGetTickCount ();
-        TickType_t x;
-        while(count != 0)
-        {
-            if(( x = xTaskGetTickCount () ) > xTime)
-            {
-                xTime = x;
-                count--;
-            }
-        }
-        printf("Tick %3d: Task 1 Out with deadLine  %3d\n", xTaskGetTickCount (), AFreq* ANumberOfPeriod);
-        ANumberOfPeriod += 1;
-        count = Count;
-        vTaskDelayUntil( &xLastWakeTimeA, xFrequency );
-    }
+	TickType_t xLastWakeTime = 0;
+	const TickType_t xFrequency = TickScalar * FreqT1; //tsk 1 frequency
+	volatile int ct = TickScalar * ComputT1;	 //tsk 1 computation time
+	while(1)
+	{	
+		// int tickTime_prev = xTaskGetTickCount();
+		int tickTime_start = FreqT1 * (NumberOfPeriodT1 - 1);
+		
+		TickType_t xTime = xTaskGetTickCount();
+		TickType_t x;
+		while(ct != 0)
+		{
+			if((x = xTaskGetTickCount()) > xTime)
+			{
+				xTime = x;
+				ct--;
+			}
+		}
+		// int tickTime_current = xTaskGetTickCount();
+		int tickTime_deadline = FreqT1 * NumberOfPeriodT1;
+
+		printf("Task 1 start %5d  |  end %5d\n", tickTime_start, tickTime_deadline);
+		NumberOfPeriodT1 += 1;
+		ct = TickScalar * ComputT1;
+		vTaskDelayUntil(&xLastWakeTime, xFrequency);
+	}
 }
 void vTask2(void* /* parameter */)
 {
-    TickType_t xLastWakeTimeB;
-    const TickType_t xFrequency = Bfreq; //tsk B frequency
-    volatile int count = 2*Count;     //tsk B capacity
-    xLastWakeTimeB = 0;
-    while(1)
-    {
-        printf("Tick %3d: Task 2 In with start  %3d\n", xTaskGetTickCount (), Bfreq*(BNumberOfPeriod - 1));
-        TickType_t xTime = xTaskGetTickCount ();
-        TickType_t x;
-        while(count != 0)
-        {
-            if(( x = xTaskGetTickCount () ) > xTime)
-            {
-                xTime = x;
-                count--;
-            }
-        }
-        printf("Tick %3d: Task 2 Out with deadLine  %3d\n", xTaskGetTickCount (), Bfreq*BNumberOfPeriod);
-        BNumberOfPeriod += 1;
-        count = 2*Count;
-        vTaskDelayUntil( &xLastWakeTimeB, xFrequency );
-    }
+	TickType_t xLastWakeTime = 0;
+	const TickType_t xFrequency = TickScalar * FreqT2; //tsk 2 frequency
+	volatile int ct = TickScalar * ComputT2;	 //tsk 2 computation time
+	while(1)
+	{
+		// int tickTime_prev = xTaskGetTickCount();
+		int tickTime_start = FreqT2 * (NumberOfPeriodT2 - 1);
+		
+		TickType_t xTime = xTaskGetTickCount();
+		TickType_t x;
+		while(ct != 0)
+		{
+			if((x = xTaskGetTickCount()) > xTime)
+			{
+				xTime = x;
+				ct--;
+			}
+		}
+		// int tickTime_current = xTaskGetTickCount();
+		int tickTime_deadline = FreqT2 * NumberOfPeriodT2;
+
+		printf("Task 2 start %5d  |  end %5d\n", tickTime_start, tickTime_deadline);
+		NumberOfPeriodT2 += 1;
+		ct = TickScalar * ComputT2;
+		vTaskDelayUntil(&xLastWakeTime, xFrequency);
+	}
 }
+void vTask3(void* /* parameter */)
+{
+	TickType_t xLastWakeTime = 0;
+	const TickType_t xFrequency = TickScalar * FreqT3; //tsk 3 frequency
+	volatile int ct = TickScalar * ComputT3;	 //tsk 3 computation time
+	while(1)
+	{
+		// int tickTime_prev = xTaskGetTickCount();
+		int tickTime_start = FreqT3 * (NumberOfPeriodT3 - 1);
+		
+		TickType_t xTime = xTaskGetTickCount();
+		TickType_t x;
+		while(ct != 0)
+		{
+			if((x = xTaskGetTickCount()) > xTime)
+			{
+				xTime = x;
+				ct--;
+			}
+		}
+		// int tickTime_current = xTaskGetTickCount();
+		int tickTime_deadline = FreqT3 * NumberOfPeriodT3;
+
+		printf("Task 3 start %5d  |  end %5d\n", tickTime_start, tickTime_deadline);
+		NumberOfPeriodT3 += 1;
+		ct = TickScalar * ComputT3;
+		vTaskDelayUntil(&xLastWakeTime, xFrequency);
+	}
+}
+
 #endif
 
 
@@ -157,17 +216,17 @@ void vApplicationIdleHook(void)
 
 int main ( void )
 {
-	/* Creating Two Task Same Priorities and Delay*/
-//	xTaskCreate( vTask1, "Task 1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-//	xTaskCreate( vTask2, "Task 2", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
-
-	/* Creating Two Task Same Priorities and DelayUntil*/
+	// T1 = (4, 12); T2 = (3, 9); T3 = (2, 6) 
+	/* Creating Task with EDF Scheduling*/
 	#if ( configUSE_EDF_SCHEDULER == 1 )
-	xTaskPeriodicCreate( vTask1, "vTask1", 1000, NULL, 1, NULL, 5 );
-	xTaskPeriodicCreate( vTask2, "vTask2", 1000, NULL, 1, NULL, 8 );
+	xTaskPeriodicCreate( vTask1, "vTask1", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 12 );
+	xTaskPeriodicCreate( vTask2, "vTask2", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 9 );
+	xTaskPeriodicCreate( vTask3, "vTask3", configMINIMAL_STACK_SIZE, NULL, 1, NULL, 6 );
 	#else
-	xTaskCreate( vTask1, "Task 1", 1000, NULL, 1, NULL );
-	xTaskCreate( vTask2, "Task 2", 1000, NULL, 1, NULL );
+    /* Creating Task Same Priorities and Delay*/
+    xTaskCreate( vTask1, "vTask1", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+	xTaskCreate( vTask2, "vTask2", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
+	xTaskCreate( vTask3, "vTask3", configMINIMAL_STACK_SIZE, NULL, 1, NULL );
 	#endif
 
 	vTaskStartScheduler();

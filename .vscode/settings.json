@@ -10,6 +10,7 @@
     "files.associations": {
         "freertos.h": "c",
         "task.h": "c",
-        "portmacro.h": "c"
+        "portmacro.h": "c",
+        "cstdlib": "c"
     }
 }

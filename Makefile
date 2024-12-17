@@ -141,9 +141,7 @@ endif
 .PHONY : clean
 clean:
 	@-rm -rf $(ODIR) edf_sim
-	@echo "--------------"
-	@echo "CLEAN COMPLETE"
-	@echo "--------------"
+	@echo "CLEAN ALL EXECUTABLES"
 
 
 .PHONY: valgrind

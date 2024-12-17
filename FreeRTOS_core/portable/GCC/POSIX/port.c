@@ -260,8 +260,8 @@ portBASE_TYPE xResult;
 		{
 			/* Kill all of the threads, they are in the detached state. */
 			xResult = pthread_cancel( pxThreads[ xNumberOfThreads ].hThread );
-            if (xResult)
-                printf("pthread_cancel error!\n");
+			if (xResult)
+				printf("pthread_cancel error!\n");
 		}
 	}
 
@@ -478,8 +478,8 @@ portBASE_TYPE xResult;
 				/* Send a signal to wake the task so that it definitely cancels. */
 				pthread_testcancel();
 				xResult = pthread_cancel( xTaskToDelete );
-                if (xResult)
-                    printf("pthread_cancel error!\n");
+				if (xResult)
+					printf("pthread_cancel error!\n");
 				/* Pthread Clean-up function will note the cancellation. */
 			}
 			(void)pthread_mutex_unlock( &xSingleThreadMutex );
@@ -564,8 +564,8 @@ portBASE_TYPE xResult = pthread_mutex_lock( &xSuspendResumeThreadMutex );
 		xSentinel = 0;
 		xResult = pthread_mutex_unlock( &xSuspendResumeThreadMutex );
 		xResult = pthread_kill( xThreadId, SIG_SUSPEND );
-        if (xResult)
-            printf("pthread_kill error!\n");
+		if (xResult)
+		printf("pthread_kill error!\n");
 		while ( ( xSentinel == 0 ) && ( pdTRUE != xServicingTick ) )
 		{
 			sched_yield();
@@ -767,7 +767,7 @@ void vPortFindTicksPerSecond( void )
 {
 	/* Needs to be reasonably high for accuracy. */
 	unsigned long ulTicksPerSecond = sysconf(_SC_CLK_TCK);
-	printf( "Timer Resolution for Run TimeStats is %ld ticks per second.\n", ulTicksPerSecond );
+	printf( "There are %ld ticks per second.\n", ulTicksPerSecond );
 }
 /*-----------------------------------------------------------*/
 
