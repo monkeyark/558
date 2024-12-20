@@ -14,21 +14,21 @@ typedef struct _task
 } task;
 
 // Define the task set based on the contents of file t3
-task taskset1[] = {
+task taskSet1[] = {
 	{1, 0, 1, 3, 3},
 	{2, 0, 4, 6, 6},
 };
 
-task taskset2[] = {
-	{1, 0, 4, 12, 12},
-	{2, 0, 3, 9, 9},
-	{3, 0, 2, 6, 6},
-};
-
-task taskset3[] = {
+task taskSet2[] = {
 	{1, 0, 3, 20, 7},
 	{2, 0, 2, 5, 4},
 	{3, 0, 2, 10, 8},
+};
+
+task taskSet3[] = {
+	{1, 0, 4, 12, 12},
+	{2, 0, 3, 9, 9},
+	{3, 0, 2, 6, 6},
 };
 
 typedef struct _readyNode
@@ -161,13 +161,13 @@ void edfSchedule(task *vTaskSet, readyNode **readyQueue, int numTask, int numHyp
 int main()
 {
 	// Choose the task set
-	task *currentTaskset = taskset3;        // Changed from current_taskset
-	int numTask = sizeof(taskset3) / sizeof(task);
+	task *currentTaskSet = taskSet3;        // Changed from current_taskSet
+	int numTask = sizeof(taskSet3) / sizeof(task);
 
 	printf("Total tasks in the system: %d\n", numTask);
 
 	// Calculate the hyperperiod of the task set
-	int numHyperperiod = calculateHyperperiod(currentTaskset, numTask);
+	int numHyperperiod = calculateHyperperiod(currentTaskSet, numTask);
 	printf("Hyperperiod: %d\n", numHyperperiod);
 	
 	// Initialize the ready queue
@@ -175,7 +175,7 @@ int main()
 	initializeQueue(&readyQueue, numHyperperiod);
 
 	// Schedule the tasks
-	edfSchedule(currentTaskset, &readyQueue, numTask, numHyperperiod);
+	edfSchedule(currentTaskSet, &readyQueue, numTask, numHyperperiod);
 
 	free(readyQueue);
 	return 0;
