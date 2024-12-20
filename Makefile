@@ -18,54 +18,35 @@ VPATH           += $(SRCROOT)/Demo/Common
 VPATH			+= $(SRCROOT)./FileIO
 VPATH			+= $(SRCROOT).
 
-# FreeRTOS Objects
-C_FILES			+= croutine.c
-C_FILES			+= event_groups.c
-C_FILES			+= list.c
-C_FILES			+= queue.c
-C_FILES			+= tasks.c
-C_FILES			+= timers.c
+# Split source files into two groups
+MAIN_FILES = main.c
+EDF_FILES = FreeRTOS_core/edf.c
 
-# portable Objects
-C_FILES			+= heap_3.c
-C_FILES			+= port.c
+# FreeRTOS Objects (only needed for main executable)
+FREERTOS_FILES += croutine.c
+FREERTOS_FILES += event_groups.c
+FREERTOS_FILES += list.c
+FREERTOS_FILES += queue.c
+FREERTOS_FILES += tasks.c
+FREERTOS_FILES += timers.c
 
-# Demo Objects
-#C_FILES			+= Minimal/blocktim.c
-#C_FILES			+= Minimal/countsem.c
-#C_FILES			+= Minimal/GenQTest.c
-#C_FILES			+= Minimal/QPeek.c
-#C_FILES			+= Minimal/recmutex.c
-#C_FILES			+= Full/BlockQ.c
-#C_FILES			+= Full/death.c
-#C_FILES			+= Full/dynamic.c
-#C_FILES			+= Full/flop.c
-#C_FILES			+= Full/integer.c
-#C_FILES			+= Full/PollQ.c
-#C_FILES			+= Full/semtest.c
-#C_FILES			+= Full/print.c
-#
-#C_FILES			+= Minimal/AbortDelay.c
-#C_FILES			+= Minimal/EventGroupsDemo.c
-#C_FILES			+= Minimal/IntSemTest.c
-#C_FILES			+= Minimal/QueueSet.c
-#C_FILES			+= Minimal/QueueSetPolling.c
-#C_FILES			+= Minimal/QueueOverwrite.c
-#C_FILES			+= Minimal/TaskNotify.c
-#C_FILES			+= Minimal/TimerDemo.c
-#
-# Main Object
-#C_FILES			+= queue_rxtx.c
-C_FILES			+= main.c
-#C_FILES			+= taskfunction.c
+# portable Objects (only needed for main executable)
+FREERTOS_FILES += heap_3.c
+FREERTOS_FILES += port.c
+
+# Combine files for main executable
+MAIN_C_FILES = $(MAIN_FILES) $(FREERTOS_FILES)
+
+# Generate OBJS names for both executables
+MAIN_OBJS = $(patsubst %.c,%.o,$(MAIN_C_FILES))
+EDF_OBJS = $(patsubst %.c,%.o,$(EDF_FILES))
+
 # Include Paths
 INCLUDES        += -I$(SRCROOT)
 INCLUDES        += -I$(SRCROOT)/FreeRTOS_core/include
 INCLUDES        += -I$(SRCROOT)/FreeRTOS_core/portable/GCC/POSIX/
 INCLUDES        += -I$(SRCROOT).
 INCLUDES        += -I/usr/include/x86_64-linux-gnu/
-# Generate OBJS names
-OBJS = $(patsubst %.c,%.o,$(C_FILES))
 
 ######## C Flags ########
 
@@ -109,15 +90,14 @@ CFLAGS += $(INCLUDES) $(CWARNS) -O2
 
 # Rules
 .PHONY : all
-all: edf_sim
-
+all: main edf
 
 # Fix to place .o files in ODIR
-_OBJS = $(patsubst %,$(ODIR)/%,$(OBJS))
+_MAIN_OBJS = $(patsubst %,$(ODIR)/%,$(MAIN_OBJS))
+_EDF_OBJS = $(patsubst %,$(ODIR)/%,$(EDF_OBJS))
 
 $(ODIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-# If verbose, print gcc execution, else hide
 ifeq ($(verbose),1)
 	@echo ">> Compiling $<"
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -126,24 +106,33 @@ else
 	@$(CC) $(CFLAGS) -c -o $@ $<
 endif
 
-edf_sim: $(_OBJS)
+main: $(_MAIN_OBJS)
 	@echo ">> Linking $@..."
 ifeq ($(verbose),1)
 	$(CC) $(CFLAGS) $^ $(LINKFLAGS) $(LIBS) -o $@
 else
 	@$(CC) $(CFLAGS) $^ $(LINKFLAGS) $(LIBS) -o $@
 endif
+	@echo "-------------------------"
+	@echo "BUILD COMPLETE: $@"
+	@echo "-------------------------"
 
+edf: $(_EDF_OBJS)
+	@echo ">> Linking $@..."
+ifeq ($(verbose),1)
+	$(CC) $(CFLAGS) $^ $(LINKFLAGS) $(LIBS) -o $@
+else
+	@$(CC) $(CFLAGS) $^ $(LINKFLAGS) $(LIBS) -o $@
+endif
 	@echo "-------------------------"
 	@echo "BUILD COMPLETE: $@"
 	@echo "-------------------------"
 
 .PHONY : clean
 clean:
-	@-rm -rf $(ODIR) edf_sim
+	@-rm -rf $(ODIR) main edf
 	@echo "CLEAN ALL EXECUTABLES"
 
-
 .PHONY: valgrind
-valgrind: edf_sim
-	valgrind.bin --tool=memcheck --leak-check=full --show-reachable=yes --track-fds=yes ./edf_sim
+valgrind: main edf
+	valgrind.bin --tool=memcheck --leak-check=full --show-reachable=yes --track-fds=yes ./main

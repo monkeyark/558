@@ -4,81 +4,51 @@
 #define STACK_PER_TASK 10
 #define MIN_STACK_PER_TASK 3
 
-
-/*
-taskset1
-3
-0 4 1 -1
-0 5 2 -1
-0 20 7 -1
-*/
-
-
 typedef struct _task
 {
-	int id; //ID of the task
-	int a; //Arrival time of the task
-	int P; //Period of the task
-	int e; //Worst case execution time
-	int d; //Relative deadline
+	int id; // ID of the task
+	int a; // Arrival time of the task
+	int e; // Worst case execution time
+	int P; // Period of the task
+	int d; // Deadline of the task
 } task;
 
-typedef struct _ready_node
+// Define the task set based on the contents of file t3
+task taskset1[] = {
+	{1, 0, 1, 3, 3},
+	{2, 0, 4, 6, 6},
+};
+
+task taskset2[] = {
+	{1, 0, 4, 12, 12},
+	{2, 0, 3, 9, 9},
+	{3, 0, 2, 6, 6},
+};
+
+task taskset3[] = {
+	{1, 0, 3, 20, 7},
+	{2, 0, 2, 5, 4},
+	{3, 0, 2, 10, 8},
+};
+
+typedef struct _readyNode
 { 
-	int task_id; // Task/job number
-	int priority; // Priority of the task
-	int time_left; // Execution time left
-	int arrival; // Arrival time (in the Queue)
-} ready_node;
+	int taskId;     // Changed from task_id
+	int priority;
+	int timeLeft;   // Changed from time_left
+	int arrival;
+} readyNode;       // Changed from ready_node
 
-//Read the task set from STDIN
-int read_taskset(task **taskset)
+// Calculate the hyperperiod of a given task set
+int calculateHyperperiod(task *vTaskSet, int numTask)  // Changed from hyperperiod
 {
-	int N; //Total number of tasks in the system
-	//Read the total number of tasks
-	scanf("%d",&N);
-	// allocate memory
-	*taskset = (task*)malloc(sizeof(task) * N);
-	//read the individual task parameters
-	int i = 0;
-	int value; // Variable used to read parameter values
-	for(i = 0 ; i < N ; i++)
-	{
-
-		//ID
-		(*taskset)[i].id = i + 1;
-		
-		//Arrival time
-		scanf("%d", &value);
-		(*taskset)[i].a = value == -1 ? 0 : value;
-
-		//Period of the task
-		scanf("%d", &value);
-		(*taskset)[i].P = value;
-
-		//Worst case execution time
-		scanf("%d", &value);
-		(*taskset)[i].e = value;
-
-		//Relative deadline
-		scanf("%d", &value);
-		(*taskset)[i].d = value == -1 ? (*taskset)[i].P : value;		
-
-	}
-
-	return N;
-}
-
-//Calculate the hyperperiod of a given task set
-int hyperperiod(task *taskset, int N)
-{
-	int lcm = taskset[0].P;
+	int lcm = vTaskSet[0].P;
 	int i = 0;
 	int a, b;
-	for(i = 1 ; i < N ; i++)
+	for(i = 1 ; i < numTask ; i++)
 	{
 		a = lcm;
-		b = taskset[i].P;
+		b = vTaskSet[i].P;
 		while(a != b)
 		{
 			if (a > b)
@@ -87,147 +57,126 @@ int hyperperiod(task *taskset, int N)
 				b = b - a;
 		}
 		
-		lcm = (lcm * taskset[i].P) / a;
+		lcm = (lcm * vTaskSet[i].P) / a;
 	}
 	return lcm;
 } 
 
-
-//Initialize the ready queue.
-void initialize_queue(ready_node **ready_queue, int H)
+// Initialize the ready queue.
+void initializeQueue(readyNode **readyQueue, int numHyperperiod)  // Changed names
 {
-	*ready_queue = (ready_node*)malloc(sizeof(ready_node) * H);
+	*readyQueue = (readyNode*)malloc(sizeof(readyNode) * numHyperperiod);
 	int i = 0;
-	for( i = 0 ; i < H; i++)
+	for( i = 0 ; i < numHyperperiod; i++)
 	{
-		(*ready_queue)[i].task_id = -1; //Indicating there is no job arriving at this time
+		(*readyQueue)[i].taskId = -1;  // Changed from task_id
 	}
 }
 
-//update the ready queue at after every unit of time
-int update_queue(task **taskset, ready_node **ready_queue, int ready_length, int t, int N)
+// Update the ready queue at after every unit of time
+int updateQueue(task *vTaskSet, readyNode **readyQueue, int readyLength, int t, int numTask)  // Changed names
 {
-	int i = 0;
-	for( i = 0 ; i < N ; i++)
+	for (int i = 0 ; i < numTask ; i++)
 	{
-		//Check if a process has to enter the ready queue
-		if ( ( (t - (*taskset)[i].a) % (*taskset)[i].P == 0 ))
+		// Check if a process has to enter the ready queue
+		if ( ( (t - vTaskSet[i].a) % vTaskSet[i].P == 0 ))
 		{
-			//Add the task to the ready queue
-			ready_length++;
-			(*ready_queue)[ready_length].task_id = (*taskset)[i].id;
-			(*ready_queue)[ready_length].priority = -1 * (t + (*taskset)[i].d);
-			(*ready_queue)[ready_length].time_left = (*taskset)[i].e;
-			(*ready_queue)[ready_length].arrival = t;
+			// Add the task to the ready queue
+			readyLength++;
+			(*readyQueue)[readyLength].taskId = vTaskSet[i].id;     // Changed from task_id
+			(*readyQueue)[readyLength].priority = -1 * (t + vTaskSet[i].d);
+			(*readyQueue)[readyLength].timeLeft = vTaskSet[i].e;    // Changed from time_left
+			(*readyQueue)[readyLength].arrival = t;
 		}
 	}
 
-	return ready_length;
+	return readyLength;
 }
 
-void print_ready_queue(ready_node *queue, int ready_length)
+void edfSchedule(task *vTaskSet, readyNode **readyQueue, int numTask, int numHyperperiod)  // Changed names
 {
-	int i = 0;
-	for (i = 0 ; i <= ready_length ; i++)
-	{
-		printf("ID: %d | Priority: %d | Time Left: %d | Arrival: %d\n", queue[i].task_id, queue[i].priority, queue[i].time_left, queue[i].arrival);
-	}
-}
-
-void edf_sched(task **taskset, ready_node **ready_queue, int N, int H)
-{
-	int worst_stack = 0;
-	int ready_length = -1;
+	int worstStack = 0;                // Changed from worst_stack
+	int readyLength = -1;              // Changed from ready_length
 	int t = 0;
 	int i = 0;
-	printf("Debug: Starting EDF scheduling\n");
-	for( t = 0 ; t < H; t++)
+	for( t = 0 ; t < numHyperperiod; t++)
 	{
-		printf("Debug: Time %d\n", t);
-		//Update the ready queue
-		
-		ready_length = update_queue(taskset, ready_queue, ready_length, t, N);
+		// Update the ready queue
+		readyLength = updateQueue(vTaskSet, readyQueue, readyLength, t, numTask);
 
-		printf("Debug: Ready queue updated, length: %d\n", ready_length);
+		int index = -1;
+		int taskId = -1;               // Changed from task_id
+		int maxPriority = -100;        // Changed from max_priority
+		int currentStack = 0;          // Changed from current_stack
 
-		//printf("---------------------READY QUEUE------------------------\n");
-		//print_ready_queue(*ready_queue, ready_length);
-
-		int index = -1; //Index of the task that has to run
-		int task_id = -1; //ID of the task that has to run
-		int max_priority = -100; //Store the priority of the selected task
-		int current_stack = 0;
-
-		//Select a suitable process from the ready queue
-		for( i = 0 ; i <= ready_length ; i++)
+		// Select a suitable process from the ready queue
+		for( i = 0 ; i <= readyLength ; i++)
 		{
-			if ( (*ready_queue)[i].task_id != -1 )
+			if ( (*readyQueue)[i].taskId != -1 )  // Changed from task_id
 			{
-				if ((*ready_queue)[i].priority > max_priority)
+				if ((*readyQueue)[i].priority > maxPriority)
 				{	
 					index = i;
-					task_id = (*ready_queue)[i].task_id;
-					max_priority = (*ready_queue)[i].priority;
+					taskId = (*readyQueue)[i].taskId;  // Changed from task_id
+					maxPriority = (*readyQueue)[i].priority;
 				}
 			}
 		}
 
-		printf("Debug: Selected task ID: %d\n", task_id);
+		// Decrease the time left for the selected task
+	    (*readyQueue)[index].timeLeft--;  // Changed from time_left
 
-		//Decrease the time left for the selected task
-	    (*ready_queue)[index].time_left--;
-
-		//Calculating the current stack space required
-		for( i = 0 ; i <= ready_length ; i++)
+		// Calculating the current stack space required
+		for( i = 0 ; i <= readyLength ; i++)
 		{
-			if ( (*ready_queue)[i].task_id != -1 )
+			if ( (*readyQueue)[i].taskId != -1 )  // Changed from task_id
 			{
-				if ((*ready_queue)[i].time_left < (*taskset)[(*ready_queue)[i].task_id - 1].e)
-					current_stack += STACK_PER_TASK;
+				if ((*readyQueue)[i].timeLeft < vTaskSet[(*readyQueue)[i].taskId - 1].e)  // Changed names
+					currentStack += STACK_PER_TASK;
 				else
-					current_stack += MIN_STACK_PER_TASK;
+					currentStack += MIN_STACK_PER_TASK;
 			}
 		}			
 
-		printf("Debug: Current stack space: %d\n", current_stack);
-
-		//Update the task in the ready queue (i.e update the time left)
-		if (current_stack > worst_stack)
-				worst_stack = current_stack;
+		// Update the task in the ready queue (i.e update the time left)
+		if (currentStack > worstStack)
+				worstStack = currentStack;
 		
-		//Remove the task from the ready queue if it is completed
-		if ( (*ready_queue)[index].time_left == 0 )
-			(*ready_queue)[index].task_id = -1;
+		// Remove the task from the ready queue if it is completed
+		if ( (*readyQueue)[index].timeLeft == 0 )  // Changed from time_left
+			(*readyQueue)[index].taskId = -1;      // Changed from task_id
 
-		//Print the schedule
-		if (task_id == -1)
-			printf("Time: %d ----> IDLE (Task ID: %d) | Stack Space: %d\n", t, task_id, current_stack);
+		// Print the schedule
+		if (taskId == -1)
+			// printf("Time: %d ----> IDLE | Stack Space: %d\n", t, current_stack);
+			printf("Time: %3d ----> Task: IDLE\n", t);
 		else
-			printf("Time: %d ----> Task: %d | Stack Space: %d\n", t, task_id, current_stack);
+			// printf("Time: %3d ----> Task: %d | Stack Space: %d\n", t, task_id, current_stack);
+			printf("Time: %3d ----> Task: %d\n", t, taskId);
+
 	}
-	printf("Debug: EDF scheduling completed\n");
-	printf("Worst Case Stack Space needed: %d frames\n", worst_stack);
+	printf("Worst Case Stack Space needed: %d frames\n", worstStack);
 }
 
 int main()
 {
-	//Read the edf task set
-	task *taskset; 
-	int N = read_taskset(&taskset);
-	printf("Total tasks in the system: %d\n", N);
+	// Choose the task set
+	task *currentTaskset = taskset3;        // Changed from current_taskset
+	int numTask = sizeof(taskset3) / sizeof(task);
 
-	//Calculate the hyperperiod of the task set
-	int H = hyperperiod(taskset, N);
-	printf("Hyperperiod: %d\n", H);
+	printf("Total tasks in the system: %d\n", numTask);
+
+	// Calculate the hyperperiod of the task set
+	int numHyperperiod = calculateHyperperiod(currentTaskset, numTask);
+	printf("Hyperperiod: %d\n", numHyperperiod);
 	
-	//Initialize the ready queue
-	ready_node *ready_queue;
-	initialize_queue(&ready_queue, H);
+	// Initialize the ready queue
+	readyNode *readyQueue;                  // Changed from ready_queue
+	initializeQueue(&readyQueue, numHyperperiod);
 
-	//Schedule the tasks
-	edf_sched(&taskset, &ready_queue, N, H);
+	// Schedule the tasks
+	edfSchedule(currentTaskset, &readyQueue, numTask, numHyperperiod);
 
-	free(taskset);
-	free(ready_queue);
+	free(readyQueue);
 	return 0;
 }
