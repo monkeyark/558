@@ -31,6 +31,12 @@ task taskSet3[] = {
 	{3, 0, 2, 6, 6},
 };
 
+task taskSet4[] = {
+	{1, 0, 4, 12, 12},
+	{2, 0, 3, 9, 9},
+	{3, 0, 3, 6, 6},
+};
+
 typedef struct _readyNode
 {
 	int taskId;
@@ -44,6 +50,7 @@ int calculateHyperperiod(task *vTaskSet, int numTask);
 void initializeQueue(readyNode **readyQueue, int numHyperperiod);
 int updateQueue(task *vTaskSet, readyNode **readyQueue, int readyLength, int t, int numTask);
 void edfSchedule(task *vTaskSet, readyNode **readyQueue, int numTask, int numHyperperiod);
+float calculateUtilizationCPU(task *vTaskSet, int numTask);
 
 /* Calculate the hyperperiod of a given task set */
 int calculateHyperperiod(task *vTaskSet, int numTask)
@@ -153,13 +160,30 @@ void edfSchedule(task *vTaskSet, readyNode **readyQueue, int numTask, int numHyp
 	// printf("Worst Case Stack Space needed: %d frames\n", worstStack); //DEBUG
 }
 
+/* Calculate EDF schedulability using CPU utilization */
+float calculateUtilizationCPU(task *vTaskSet, int numTask) {
+    float utilization = 0.0;
+    for (int i = 0; i < numTask; i++) {
+        utilization += (float)vTaskSet[i].e / vTaskSet[i].p;
+    }
+    return utilization;
+}
+
 int main()
 {
 	/* Choose the task set */
-	task *currentTaskSet = taskSet3;
-	int numTask = sizeof(taskSet3) / sizeof(task);
+	task *currentTaskSet = taskSet4;
+	int numTask = sizeof(taskSet4) / sizeof(task);
 
-	// printf("Total tasks in the system: %d\n", numTask); //DEBUG
+	/* Check EDF schedulability */
+	float utilization = calculateUtilizationCPU(currentTaskSet, numTask);
+	printf("CPU Utilization = %.2f\n", utilization);
+	if (utilization <= 1.0) {
+		printf("Taskset is schedulable by EDF\n");
+	} else {
+		printf("Taskset is NOT schedulable by EDF\nNeed to use other scheduling algorithm\n");
+		return 0;
+	}
 
 	/* Calculate the hyperperiod of the task set */
 	int numHyperperiod = calculateHyperperiod(currentTaskSet, numTask);
