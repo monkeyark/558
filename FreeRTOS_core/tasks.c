@@ -345,6 +345,7 @@ typedef struct tskTaskControlBlock
 	#endif
 	#if( configUSE_EDF_SCHEDULER == 1 )
 		TickType_t xTaskPeriod;
+		TickType_t xTaskDeadline;
 	#endif	
 
 } tskTCB;
@@ -832,13 +833,14 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 		return xReturn;
 	}
 	#if( configUSE_EDF_SCHEDULER == 1 )
-	BaseType_t xTaskPeriodicCreate(	TaskFunction_t pxTaskCode,
+	BaseType_t xTaskCreate_EDF(	TaskFunction_t pxTaskCode,
 							const char * const pcName,		/*lint !e971 Unqualified char types are allowed for strings and single characters only. */
 							const configSTACK_DEPTH_TYPE usStackDepth,
 							void * const pvParameters,
 							UBaseType_t uxPriority,
 							TaskHandle_t * const pxCreatedTask,
-							TickType_t period )
+							TickType_t period,
+							TickType_t deadline )
 	{
 	TCB_t *pxNewTCB;
 	BaseType_t xReturn;
@@ -910,6 +912,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB ) PRIVILEGED_FUNCTION;
 			#endif /* configSUPPORT_STATIC_ALLOCATION */
 
 			pxNewTCB->xTaskPeriod = period; //changes vs xTaskCreate
+			pxNewTCB->xTaskDeadline = deadline;
 			prvInitialiseNewTask( pxTaskCode, pcName, ( uint32_t ) usStackDepth, pvParameters, uxPriority, pxCreatedTask, pxNewTCB, NULL );
 			TickType_t xTicks;
 
@@ -2050,12 +2053,12 @@ BaseType_t xReturn;
 		/* The Idle task is being created using dynamically allocated RAM. */
 		#if(configUSE_EDF_SCHEDULER == 1)
 			TickType_t initIDLEPeriod = 90000;
-			xReturn = xTaskPeriodicCreate(	prvIdleTask,
+			xReturn = xTaskCreate_EDF(	prvIdleTask,
 								configIDLE_TASK_NAME,
 								configMINIMAL_STACK_SIZE,
 								( void * ) NULL,
 								( tskIDLE_PRIORITY | portPRIVILEGE_BIT ),
-								NULL, initIDLEPeriod );
+								NULL, initIDLEPeriod, 0);
 
 		#else
 		xReturn = xTaskCreate(	prvIdleTask,

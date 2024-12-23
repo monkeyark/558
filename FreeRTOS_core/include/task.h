@@ -327,13 +327,14 @@ is used in assert() statements. */
 #endif
 
 #if( configUSE_EDF_SCHEDULER == 1 )
-    BaseType_t xTaskPeriodicCreate(  TaskFunction_t pxTaskCode,
+    BaseType_t xTaskCreate_EDF(  TaskFunction_t pxTaskCode,
                                     const char * const pcName,
                                     const configSTACK_DEPTH_TYPE usStackDepth,
                                     void * const pvParameters,
                                     UBaseType_t uxPriority,
                                     TaskHandle_t * const pxCreatedTask,
-                                    TickType_t period ) PRIVILEGED_FUNCTION;
+                                    TickType_t period,
+                                    TickType_t deadline ) PRIVILEGED_FUNCTION;
 #endif
 
 
