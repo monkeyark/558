@@ -46,7 +46,7 @@ INCLUDES        += -I$(SRCROOT)
 INCLUDES        += -I$(SRCROOT)/FreeRTOS_core/include
 INCLUDES        += -I$(SRCROOT)/FreeRTOS_core/portable/GCC/POSIX/
 INCLUDES        += -I$(SRCROOT).
-INCLUDES        += -I/usr/include/x86_64-linux-gnu/
+# INCLUDES        += -I/usr/include/x86_64-linux-gnu/  # Linux-specific path, disabled for macOS
 
 ######## C Flags ########
 
@@ -72,7 +72,7 @@ CWARNS += -Wmissing-prototypes
 
 #CWARNS += -Wno-unused-function
 
-CFLAGS += -m32
+# CFLAGS += -m32  # Disabled for macOS compatibility
 CFLAGS += -DDEBUG=1
 #CFLAGS += -g -DUSE_STDIO=1 -D__GCC_POSIX__=1
 CFLAGS += -g -UUSE_STDIO -D__GCC_POSIX__=1
