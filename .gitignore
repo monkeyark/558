@@ -56,3 +56,8 @@ dkms.conf
 main
 edf
 obj/
+
+
+### Markdown ###
+*.pdf
+
