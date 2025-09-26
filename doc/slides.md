@@ -13,13 +13,37 @@ header-includes:
 
 
 # Table of Contents
+
 1. [Introduction to FreeRTOS](#introduction-to-freertos)
-2. [Basic Concepts - Tasks](#basic-concepts---tasks)
-3. [Basic Concepts - Configuration](#basic-concepts---configuration)
-4. [EDF Scheduler Demo](#edf-scheduler-demo)
-5. [Implementation Suggestions](#implementation-suggestions)
-6. [Problems](#problems)
-7. [Conclusion](#conclusion)
+    - [Official Documentation](#official-documentation)
+    - [FreeRTOS Kernel](#freertos-kernel)
+    - [Key Features](#key-features)
+2. [Basic Concepts](#basic-concepts)
+    - [Tasks](#tasks)
+    - [Task States](#task-states)
+    - [Configuration](#configuration)
+    - [Scheduling Algorithms](#scheduling-algorithms)
+3. [Task Management](#task-management)
+    - [Task Priorities](#task-priorities)
+    - [Task Delays](#task-delays)
+    - [Task Functions](#task-functions)
+    - [Creating a Task](#creating-a-task)
+    - [Deleting a Task](#deleting-a-task)
+
+# Table of Contents
+
+4. [Interrupt Management](#interrupt-management)
+5. [Project Demo](#project-demo)
+    - [EDF Implementation in This Project](#edf-implementation-in-this-project)
+    - [EDF Scheduler Implementation](#edf-scheduler-implementation)
+6. [Implementation Suggestions](#implementation-suggestions)
+    - [Stack Sizing](#1-stack-sizing)
+    - [Priority Assignment](#2-priority-assignment)
+    - [Task Design](#3-task-design)
+    - [Memory Management](#4-memory-management)
+    - [Error Handling](#5-error-handling)
+7. [Problems](#problems)
+8. [Conclusion](#conclusion)
 
 # Introduction to FreeRTOS
 
@@ -44,7 +68,7 @@ https://github.com/FreeRTOS/FreeRTOS-Kernel
 - **Memory management**: Multiple heap allocation schemes
 - **Portable**: Runs on many different microcontrollers
 
-# Basic Concepts - Tasks
+# Basic Concepts
 
 ## Tasks
 A task is a function that runs independently and has its own stack. Tasks are the fundamental building blocks of FreeRTOS applications.
@@ -55,7 +79,9 @@ A task is a function that runs independently and has its own stack. Tasks are th
 - **Blocked**: Waiting for an event (delay, semaphore, etc.)
 - **Suspended**: Explicitly suspended and won't run until resumed
 
-# Basic Concepts - Configuration
+# Basic Concepts
+
+## Configuration
 
 ```c
 FreeRTOSConfig.h
@@ -77,17 +103,15 @@ contains all configuration options for FreeRTOS
 #define configUSE_MUTEXES                       1
 ```
 
+# Basic Concepts
 
-# Basic Concepts - Scheduling Algorithms
-
+## Scheduling Algorithms
 **Fixed Priority**: Preemptive Priority Scheduling (Default)
 - Tasks with higher priority always run first
 - Lower priority tasks are preempted when higher priority tasks become ready
 - Same priority tasks share CPU time
-
 **Pre-emptive**:
 **Time Slicing**:
-
 
 
 # Task Management
@@ -130,9 +154,7 @@ int main(void) {
 ```
 
 # Task Management
-
 ## Deleting a Task
-
 ```c
 void vTaskDelete( TaskHandle_t pxTaskToDelete );
 ```
@@ -144,18 +166,19 @@ void vTaskDelete( TaskHandle_t pxTaskToDelete );
 - Tasks with the same priority share CPU time (round-robin)
 
 ## Task Delays
-
 ```c
 // Delay for a specific number of ticks
 vTaskDelay(pdMS_TO_TICKS(1000));  // Delay for 1000ms
-
 // Delay until a specific time
 TickType_t xLastWakeTime = xTaskGetTickCount();
 vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));  // Periodic delay
 ```
 
 
-# EDF Scheduler Demo
+# Interrupt Management
+
+
+# Project Demo
 ## EDF Implementation in This Project
 
 The project includes a custom EDF scheduler implementation in `edf.c`. Here's how it works:
@@ -179,9 +202,9 @@ task taskSet[] = {
 };
 ```
 
-# EDF Scheduler Demo
+# Project Demo
 
-## Using EDF in FreeRTOS
+## EDF Scheduler Implementation
 
 ```c
 // Enable EDF scheduler in FreeRTOSConfig.h
