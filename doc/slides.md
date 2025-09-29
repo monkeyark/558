@@ -1,8 +1,8 @@
 ---
-title: "FreeRTOS Tutorial: A Comprehensive Guide"
-author: "Zhi Wang"
+title: "CPRE 488/588 : FreeRTOS Tutorial – A Beginner's Guide"
+author: "Prof. Manimaran Govindarasu, Zhi Wang"
 institute: "Iowa State University"
-date: "2025 Fall"
+date: "CPRE 488/588 - 2025 Fall"
 theme: "metropolis"
 colortheme: "dolphin"
 fontsize: "10pt"
@@ -15,33 +15,11 @@ header-includes:
 # Table of Contents
 
 1. [Introduction to FreeRTOS](#introduction-to-freertos)
-    - [Official Documentation](#official-documentation)
-    - [FreeRTOS Kernel](#freertos-kernel)
-    - [Key Features](#key-features)
 2. [Basic Concepts](#basic-concepts)
-    - [Tasks](#tasks)
-    - [Task States](#task-states)
-    - [Configuration](#configuration)
-    - [Scheduling Algorithms](#scheduling-algorithms)
 3. [Task Management](#task-management)
-    - [Task Priorities](#task-priorities)
-    - [Task Delays](#task-delays)
-    - [Task Functions](#task-functions)
-    - [Creating a Task](#creating-a-task)
-    - [Deleting a Task](#deleting-a-task)
-
-# Table of Contents
-
 4. [Interrupt Management](#interrupt-management)
 5. [Project Demo](#project-demo)
-    - [EDF Implementation in This Project](#edf-implementation-in-this-project)
-    - [EDF Scheduler Implementation](#edf-scheduler-implementation)
 6. [Implementation Suggestions](#implementation-suggestions)
-    - [Stack Sizing](#1-stack-sizing)
-    - [Priority Assignment](#2-priority-assignment)
-    - [Task Design](#3-task-design)
-    - [Memory Management](#4-memory-management)
-    - [Error Handling](#5-error-handling)
 7. [Problems](#problems)
 8. [Conclusion](#conclusion)
 
@@ -81,6 +59,11 @@ A task is a function that runs independently and has its own stack. Tasks are th
 
 # Basic Concepts
 
+![](fig/tskstate.png){width=70%}
+
+
+# Basic Concepts
+
 ## Configuration
 
 ```c
@@ -106,13 +89,22 @@ contains all configuration options for FreeRTOS
 # Basic Concepts
 
 ## Scheduling Algorithms
-**Fixed Priority**: Preemptive Priority Scheduling (Default)
-- Tasks with higher priority always run first
-- Lower priority tasks are preempted when higher priority tasks become ready
-- Same priority tasks share CPU time
-**Pre-emptive**:
-**Time Slicing**:
+**Fixed Priority (Default)**
 
+- Preemptive Priority Scheduling
+- Tasks with higher priority always run first
+- Higher priority tasks preempt lower ones
+- Same priority tasks share CPU time
+
+**Pre-emptive Scheduling**
+
+- Higher priority tasks can interrupt (preempt) lower priority tasks
+- Critical tasks run with minimal delay
+
+**Time Slicing (Round Robin)**
+
+- Tasks with the same priority share CPU time equally
+- Scheduler switches between these tasks at each tick interrupt
 
 # Task Management
 
@@ -120,8 +112,6 @@ contains all configuration options for FreeRTOS
 - Higher numbers = higher priority
 - `configMAX_PRIORITIES` defines the maximum priority level
 - Tasks with the same priority share CPU time (round-robin)
-
-## Task Delays
 
 
 # Task Management
@@ -177,21 +167,48 @@ vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));  // Periodic delay
 
 # Interrupt Management
 
+## Interrupt Safe API
+
+FreeRTOS provides a set of "Interrupt Safe" API functions that can be safely called from within an Interrupt Service Routine (ISR). These functions are specifically designed to handle the restrictions and requirements of running in an interrupt context.
+
+## Key Points:
+- **Do NOT call standard FreeRTOS API functions from an ISR.** Use only the versions ending with `FromISR`, such as `xQueueSendFromISR`, `xSemaphoreGiveFromISR`, or `xTaskNotifyFromISR`.
+- These functions are optimized to be fast and safe for use in ISRs, and they often require an extra parameter to indicate if a context switch should be performed after the ISR.
+
+
+# Project Demo - FreeRTOS EDF Scheduling
+
+## FreeRTOS EDF Scheduling
+
+FreeRTOS uses fixed-priority scheduling but lacks EDF support. EDF ensures better deadline adherence and resource utilization for real-time applications.
+
+This project implements Earliest Deadline First (EDF) scheduling in FreeRTOS for IoT systems where task timing is critical and delays can cause failures or poor performance.real-time applications.
+
+## See the project powerpoint
+
+## https://github.com/monkeyark/558
 
 # Project Demo
-## EDF Implementation in This Project
 
-The project includes a custom EDF scheduler implementation in `edf.c`. Here's how it works:
+## FreeRTOS Architecture
+Each real-time kernel port contains three common files and platform-specific files. The FreeRTOS_core directory contains the common kernel components, while the portable directory contains microcontroller/compiler-specific implementations.
+
+- FreeRTOS_core/: Common kernel files (list.c, queue.c, tasks.c)
+- FreeRTOS_core/portable/: Platform-specific implementations
+- FreeRTOS_core/include/: Kernel header files
+- FreeRTOSConfig.h: Configuration file
+
+# Project Demo - EDF scheduler implementation edf.c
 
 ```c
 // Task structure for EDF
 typedef struct _task
 {
     int id;     // Task ID
-    int a;      // Arrival time
-    int e;      // Execution time
-    int p;      // Period
-    int d;      // Deadline
+    int at;      // Arrival time
+    int et;      // Execution time
+    int pd;      // Period
+    int dd;      // Deadline
 } task;
 
 // Example task set
@@ -223,6 +240,19 @@ xTaskCreate_EDF(
 );
 ```
 
+
+# Project Ideas
+
+## Smart Home Automation
+Build a system that controls lights and monitors temperature using sensors and actuators. FreeRTOS can be used to create separate tasks for sensor reading, actuator control, and communication, ensuring that each function operates independently and responds in real time to changes in the environment.
+
+## Robot Car Controller
+Develop an autonomous robot car that uses sensors for obstacle avoidance and motor control for navigation. FreeRTOS enables you to assign different tasks for sensor data acquisition, path planning, and motor actuation, allowing the robot to react quickly to obstacles and manage multiple control loops concurrently.
+
+## IoT Data Logger
+Build a data collection device using an ESP32 that reads multiple sensors, stores data locally, and transmits to cloud services via WiFi. FreeRTOS can manage tasks for periodic sensor sampling, data storage, and network communication, ensuring reliable data logging and efficient use of system resources.
+
+
 # Implementaion Suggestions
 
 ## 1. Stack Sizing
@@ -234,6 +264,7 @@ xTaskCreate_EDF(
 - Use as few priority levels as possible
 - Reserve highest priority for critical tasks
 - Avoid priority inversion scenarios
+
 
 # Implementaion Suggestions
 
@@ -267,8 +298,17 @@ configASSERT(xQueue != NULL);
 4. **Race Conditions**: Shared data access without protection
 5. **Infinite Loops**: Tasks that never yield control
 
-# Conclusion
 
-FreeRTOS provides a powerful foundation for real-time embedded applications. By understanding tasks, scheduling, and inter-task communication, you can build robust and responsive systems. The EDF scheduler extension in this project demonstrates how to implement advanced scheduling algorithms for real-time systems with strict timing requirements.
 
-For more information, refer to the official FreeRTOS documentation and the source code examples in this project.
+# Reference
+## Official Documentation
+[1] FreeRTOS, "FreeRTOS Documentation: Overview," [Online]. Available: https://www.freertos.org/Documentation/00-Overview. [Accessed: Jun. 2024].
+
+## FreeRTOS Kernel
+[2] FreeRTOS, "FreeRTOS Kernel," GitHub repository, https://github.com/FreeRTOS/FreeRTOS-Kernel [Accessed: Jun. 2024].
+
+
+# Questions
+
+## FreeRTOS
+FreeRTOS enables robust real-time embedded systems through effective task management and inter-task communication. For further details, see the official FreeRTOS documentation and project examples.
