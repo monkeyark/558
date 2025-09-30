@@ -61,3 +61,8 @@ obj/
 ### Markdown ###
 *.pdf
 
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
