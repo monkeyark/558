@@ -1,9 +1,10 @@
 ---
 title: "FreeRTOS Tutorial – A Beginner's Guide"
-subtitle: "CPRE 4580/5580"
-author: "Prof. Manimaran Govindarasu, Zhi Wang"
-institute: "Iowa State University"
-date: "2025 Fall"
+subtitle: "CPRE 4580/5580 - 2025 Fall"
+author: "Prof. Manimaran Govindarasu"
+date: "Zhi Wang - danryw@iastate.edu"
+institute: "Department of Electrical
+and Computer Engineering, Iowa State University"
 theme: "metropolis"
 colortheme: "dolphin"
 fontsize: "10pt"
@@ -16,13 +17,14 @@ header-includes:
 # Table of Contents
 
 1. [Introduction to FreeRTOS](#introduction-to-freertos)
-2. [Basic Concepts](#basic-concepts)
-3. [Task Management](#task-management)
+2. [Basic Concepts](#basic-concepts---tasks)
+3. [Task Management](#task-management---priorities)
 4. [Interrupt Management](#interrupt-management)
-5. [Project Demo](#project-demo)
-6. [Implementation Suggestions](#implementation-suggestions)
-7. [Other Open-Source RTOS](#other-open-source-rtos)
-8. [Conclusion](#conclusion)
+5. [FreeRTOS Kernel](#freertos-kernel---installation)
+6. [Project Demo](#project-demo---freertos-edf-scheduling)
+7. [Project Proposal Ideas](#project-proposal-ideas)
+8. [Implementation Suggestions](#implementation-suggestions)
+9. [Other Open-Source RTOS](#other-free-and-open-source-rtos)
 
 # Introduction to FreeRTOS
 
@@ -31,10 +33,10 @@ FreeRTOS (Free Real-Time Operating System) is a popular, open-source real-time o
 # Introduction to FreeRTOS
 
 ## Official Documentation
-https://www.freertos.org/Documentation/00-Overview
+- \footnotesize https://www.freertos.org/Documentation/00-Overview
 
 ## FreeRTOS Kernel
-https://github.com/FreeRTOS/FreeRTOS-Kernel
+- \footnotesize https://github.com/FreeRTOS/FreeRTOS-Kernel
 
 
 # Introduction to FreeRTOS
@@ -55,7 +57,7 @@ https://github.com/No-Chicken/OV-Watch
 
 ![](fig/ov_watch_arch.jpg){width=70%}
 
-# Basic Concepts
+# Basic Concepts - Tasks
 
 ## Tasks
 Each runs independently and has its own stack, full API access, preemptive/cooperative scheduling, suitable for most applications.
@@ -63,14 +65,14 @@ Each runs independently and has its own stack, full API access, preemptive/coope
 ## Co-routines
 All share one stack (saves RAM), cooperative scheduling only, macro-based implementation, many usage restrictions, rarely used today.
 
-# Basic Concepts
+# Basic Concepts - Task States
 ## Task States
 - **Running**: Currently executing on the CPU
 - **Ready**: Ready to run but waiting for CPU time
 - **Blocked**: Waiting for an event (delay, semaphore, etc.)
 - **Suspended**: Explicitly suspended and won't run until resumed
 
-# Basic Concepts
+# Basic Concepts - Task States
 
 ![](fig/tskstate.png){width=70%}
 
@@ -111,7 +113,7 @@ All share one stack (saves RAM), cooperative scheduling only, macro-based implem
 - Tasks with the same priority share CPU time equally
 - Tasks switches between these tasks at each tick interrupt
 
-# Task Management
+# Task Management - Priorities
 
 ## Task Priorities
 - `configMAX_PRIORITIES` defines the maximum priority level in `FreeRTOSConfig.h`
@@ -168,8 +170,8 @@ vTaskResume(xTaskHandle);           // Resume the task
 vTaskPrioritySet(xTaskHandle, 2);   // Change priority
 ```
 
-# Task Management
-## Task Delays
+# Task Management - Delays
+
 ```c
 // Delay for a specific number of ticks
 vTaskDelay(pdMS_TO_TICKS(1000));  // Delay for 1000ms
@@ -199,14 +201,20 @@ FreeRTOS provides a set of "Interrupt Safe" API functions that can be safely cal
 
 # FreeRTOS Kernel - Installation
 
-Each real-time kernel port contains three common files and platform-specific files. Find the associated architecture in protable folder of chip you use
+## FreeRTOS Kernel Repository
 
-### Arduino
-- https://docs.arduino.cc/libraries/freertos/
+- \footnotesize https://github.com/FreeRTOS/FreeRTOS-Kernel
 
-### ESP32
-- https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/freertos.html
-- https://github.com/espressif/esp-idf/tree/v5.5.1/components/freertos
+
+## Protable (Architecture Platform Specific)
+- Each real-time kernel port contains three common files and platform-specific files. Find the associated architecture in protable folder of chip you use
+
+## Arduino
+- \footnotesize https://docs.arduino.cc/libraries/freertos/
+
+## ESP32
+- \footnotesize https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/freertos.html
+- \footnotesize https://github.com/espressif/esp-idf/tree/v5.5.1/components/freertos
 
 # FreeRTOS Kernel - Structure
 ![](fig/FreeRTOS_arch.png){width=100%}
@@ -242,36 +250,28 @@ FreeRTOS Kernel/
 
 FreeRTOS uses fixed-priority scheduling but lacks EDF support. EDF ensures better deadline adherence and resource utilization for real-time applications.
 
-This project implements Earliest Deadline First (EDF) scheduling in FreeRTOS for IoT systems where task timing is critical and delays can cause failures or poor performance.real-time applications.
+This demo project implements Earliest Deadline First (EDF) scheduling in FreeRTOS for IoT systems where task timing is critical and delays can cause failures or poor performance.real-time applications.
 
-## See the project powerpoint
-
-## https://github.com/monkeyark/558
-
-# Project Demo - EDF scheduler implementation edf.c
+# Project Demo - EDF Scheduler Implementation edf.c
 
 ```c
-// Task structure for EDF
-typedef struct _task
+typedef struct _task   // Task structure for EDF
 {
-    int id;     // Task ID
-    int at;      // Arrival time
-    int et;      // Execution time
-    int pd;      // Period
-    int dd;      // Deadline
+    int id;            // Task ID
+    int at;            // Arrival time
+    int et;            // Execution time
+    int pd;            // Period
+    int dd;            // Deadline
 } task;
 
-// Example task set
-task taskSet[] = {
-    {1, 0, 4, 12, 12},  // Task 1: 4ms exec, 12ms period, 12ms deadline
-    {2, 0, 3, 9, 9},    // Task 2: 3ms exec, 9ms period, 9ms deadline
-    {3, 0, 3, 6, 6},    // Task 3: 3ms exec, 6ms period, 6ms deadline
+task taskSet[] = {      // Example task set, time unit in ticks
+    {1, 0, 4, 12, 12},  // Task 1: 4 exec, 12 period, 12 ddl
+    {2, 0, 3, 9, 9},    // Task 2: 3 exec, 9  period, 9  ddl
+    {3, 0, 3, 6, 6},    // Task 3: 3 exec, 6  period, 6  ddl
 };
 ```
 
-# Project Demo
-
-## EDF Scheduler Implementation
+# Project Demo - EDF Scheduler Implementation
 
 ```c
 // Enable EDF scheduler in FreeRTOSConfig.h
@@ -290,7 +290,7 @@ xTaskCreate_EDF(
 );
 ```
 
-# Project Ideas
+# Project Proposal Ideas
 
 ## 1. Implementation of RMS / LLF / ...
 
@@ -337,18 +337,19 @@ FreeRTOS can manage tasks for periodic sensor sampling, data storage, controllin
 
 
 
-# Reference
-## FreeRTOS Official Documentation
-[1] FreeRTOS, "FreeRTOS Documentation: Overview," [Online]. Available: www.freertos.org/Documentation/00-Overview. [Accessed: Jun. 2024].
+# References
 
-## FreeRTOS Kernel
-[2] FreeRTOS, "FreeRTOS Kernel," GitHub repository, github.com/FreeRTOS/FreeRTOS-Kernel [Accessed: Jun. 2024].
+\tiny
+[1] FreeRTOS, "FreeRTOS Documentation: Overview," [Online]. Available: https://www.freertos.org/Documentation/00-Overview. [Accessed: Jun. 2024].
 
+[2] R. Barry, "Mastering the FreeRTOS Real Time Kernel: A Hands-On Tutorial Guide," FreeRTOS, 2018. [Online]. Available: https://www.freertos.org/media/2018/161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide.pdf. [Accessed: Jun. 2024].
 
-## FreeRTOS on STM32
-[3] "FreeRTOS Tutorial Video Series," YouTube, www.youtube.com/watch?v=QGVAayFI5ZQ&list=PLnMKNibPkDnFeFV4eBfDQ9e5IrGL_dx1Q [Accessed: Jun. 2024].
+[3] "FreeRTOS Tutorial Video Series," YouTube. [Online]. Available: https://www.youtube.com/watch?v=QGVAayFI5ZQ&list=PLnMKNibPkDnFeFV4eBfDQ9e5IrGL_dx1Q. [Accessed: Jun. 2024].
 
 # Questions
 
 ## Questions?
+
+## Zhi Wang
+- danryw@iastate.edu
 
