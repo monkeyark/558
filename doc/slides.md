@@ -1,8 +1,9 @@
 ---
-title: "CPRE 488/588 : FreeRTOS Tutorial – A Beginner's Guide"
+title: "FreeRTOS Tutorial – A Beginner's Guide"
+subtitle: "CPRE 4580/5580"
 author: "Prof. Manimaran Govindarasu, Zhi Wang"
 institute: "Iowa State University"
-date: "CPRE 488/588 - 2025 Fall"
+date: "2025 Fall"
 theme: "metropolis"
 colortheme: "dolphin"
 fontsize: "10pt"
@@ -20,12 +21,12 @@ header-includes:
 4. [Interrupt Management](#interrupt-management)
 5. [Project Demo](#project-demo)
 6. [Implementation Suggestions](#implementation-suggestions)
-7. [Problems](#problems)
+7. [Other Open-Source RTOS](#other-open-source-rtos)
 8. [Conclusion](#conclusion)
 
 # Introduction to FreeRTOS
 
-FreeRTOS (Free Real-Time Operating System) is a popular, open-source real-time operating system kernel for embedded systems. It's designed to be small, simple, and easy to use while providing powerful features for real-time applications.
+FreeRTOS (Free Real-Time Operating System) is a popular, open-source real-time operating system kernel for embedded systems. It is designed to be small, simple, and easy to use while providing powerful features for real-time applications.
 
 # Introduction to FreeRTOS
 
@@ -45,6 +46,14 @@ https://github.com/FreeRTOS/FreeRTOS-Kernel
 - **Inter-task communication**: Queues, semaphores, mutexes
 - **Memory management**: Multiple heap allocation schemes
 - **Portable**: Runs on many different microcontrollers
+
+# Introduction to FreeRTOS - Application
+## OV Watch
+https://github.com/No-Chicken/OV-Watch
+
+![](fig/ov_watch_ui.png){width=70%}
+
+![](fig/ov_watch_arch.jpg){width=70%}
 
 # Basic Concepts
 
@@ -175,6 +184,47 @@ FreeRTOS provides a set of "Interrupt Safe" API functions that can be safely cal
 - **Do NOT call standard FreeRTOS API functions from an ISR.** Use only the versions ending with `FromISR`, such as `xQueueSendFromISR`, `xSemaphoreGiveFromISR`, or `xTaskNotifyFromISR`.
 - These functions are optimized to be fast and safe for use in ISRs, and they often require an extra parameter to indicate if a context switch should be performed after the ISR.
 
+# FreeRTOS Kernel Structure
+Each real-time kernel port contains three common files and platform-specific files. The FreeRTOS_core directory contains the common kernel components, while the portable directory contains microcontroller/compiler-specific implementations.
+
+# FreeRTOS Kernel Structure
+![](fig/FreeRTOS_arch.png){width=100%}
+
+<!-- # FreeRTOS Kernel Structure
+
+FreeRTOS Kernel/
+|-- include/                  # Header files
+|   |-- FreeRTOS.h            # Main FreeRTOS header
+|   |-- task.h                # Task management
+|   |-- queue.h               # Queue management
+|   +-- ...                   # Other kernel headers
+|-- portable/                 # Platform-specific implementations
+|   |-- GCC/                  # GCC compiler ports
+|   |   |-- POSIX/            # x86 Linux (e.g., for PC simulation)
+|   |   |-- ARM_xxx/          # STM32 (Cortex-M3/M4/M7)
+|   |   |-- AVR_xxx/          # Arduino (Samd/MegaAVR/AVR/Mbed)
+|   |   +-- ...               # Other GCC-supported architectures
+|   |-- MSVC-MingW/           # Microsoft Visual C++ ports
+|   +-- ...                   # Other compiler ports
+|-- list.c                    # Linked list implementation
+|-- queue.c                   # Queue implementation
+|-- tasks.c                   # Task scheduler
+|-- timers.c                  # Software timers
+|-- croutine.c                # Co-routines
+|-- event_groups.c            # Event groups
++-- stream_buffer.c           # Stream buffers -->
+
+# FreeRTOS Kernel Installation
+
+## Find the associated architecture in protable folder of microchip you use 
+
+### Arduino
+- https://docs.arduino.cc/libraries/freertos/
+
+### ESP32
+- https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/freertos.html
+- https://github.com/espressif/esp-idf/tree/v5.5.1/components/freertos
+
 
 # Project Demo - FreeRTOS EDF Scheduling
 
@@ -187,16 +237,6 @@ This project implements Earliest Deadline First (EDF) scheduling in FreeRTOS for
 ## See the project powerpoint
 
 ## https://github.com/monkeyark/558
-
-# Project Demo
-
-## FreeRTOS Architecture
-Each real-time kernel port contains three common files and platform-specific files. The FreeRTOS_core directory contains the common kernel components, while the portable directory contains microcontroller/compiler-specific implementations.
-
-- FreeRTOS_core/: Common kernel files (list.c, queue.c, tasks.c)
-- FreeRTOS_core/portable/: Platform-specific implementations
-- FreeRTOS_core/include/: Kernel header files
-- FreeRTOSConfig.h: Configuration file
 
 # Project Demo - EDF scheduler implementation edf.c
 
@@ -243,17 +283,13 @@ xTaskCreate_EDF(
 
 # Project Ideas
 
-## Smart Home Automation
-Build a system that controls lights and monitors temperature using sensors and actuators. FreeRTOS can be used to create separate tasks for sensor reading, actuator control, and communication, ensuring that each function operates independently and responds in real time to changes in the environment.
+## 1. Implementation of Rate Monotonic Scheduling / Priority Inversion / ...
 
-## Robot Car Controller
-Develop an autonomous robot car that uses sensors for obstacle avoidance and motor control for navigation. FreeRTOS enables you to assign different tasks for sensor data acquisition, path planning, and motor actuation, allowing the robot to react quickly to obstacles and manage multiple control loops concurrently.
-
-## IoT Data Logger
+## 2. IoT Data Logger
 Build a data collection device using an ESP32 that reads multiple sensors, stores data locally, and transmits to cloud services via WiFi. FreeRTOS can manage tasks for periodic sensor sampling, data storage, and network communication, ensuring reliable data logging and efficient use of system resources.
 
 
-# Implementaion Suggestions
+# Implementation Suggestions
 
 ## 1. Stack Sizing
 - Start with `configMINIMAL_STACK_SIZE` and increase if needed
@@ -266,7 +302,7 @@ Build a data collection device using an ESP32 that reads multiple sensors, store
 - Avoid priority inversion scenarios
 
 
-# Implementaion Suggestions
+# Implementation Suggestions
 
 ## 3. Task Design
 - Keep tasks simple and focused
@@ -278,35 +314,30 @@ Build a data collection device using an ESP32 that reads multiple sensors, store
 - Monitor heap usage
 - Avoid memory leaks
 
-# Implementaion Suggestions
-### 5. Error Handling
-```c
-// Check return values
-if (xTaskCreate(...) != pdPASS) {
-    // Handle error
-}
+# Other open-source RTOS
 
-// Use configASSERT for debugging
-configASSERT(xQueue != NULL);
-```
+## Zephyr
 
-# Problems
+- https://www.zephyrproject.org/
+- https://github.com/zephyrproject-rtos
 
-1. **Stack Overflow**: Not allocating enough stack space
-2. **Priority Inversion**: High priority task waiting for low priority task
-3. **Deadlock**: Circular waiting for resources
-4. **Race Conditions**: Shared data access without protection
-5. **Infinite Loops**: Tasks that never yield control
+## Apache NuttX
+
+- https://nuttx.apache.org/
+- https://github.com/apache/nuttx
 
 
 
 # Reference
-## Official Documentation
+## FreeRTOS Official Documentation
 [1] FreeRTOS, "FreeRTOS Documentation: Overview," [Online]. Available: https://www.freertos.org/Documentation/00-Overview. [Accessed: Jun. 2024].
 
 ## FreeRTOS Kernel
 [2] FreeRTOS, "FreeRTOS Kernel," GitHub repository, https://github.com/FreeRTOS/FreeRTOS-Kernel [Accessed: Jun. 2024].
 
+
+## FreeRTOS on STM32
+[3] "FreeRTOS Tutorial Video Series," YouTube, https://www.youtube.com/watch?v=QGVAayFI5ZQ&list=PLnMKNibPkDnFeFV4eBfDQ9e5IrGL_dx1Q [Accessed: Jun. 2024].
 
 # Questions
 
