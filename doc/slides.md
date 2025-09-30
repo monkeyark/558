@@ -199,7 +199,7 @@ FreeRTOS provides a set of "Interrupt Safe" API functions that can be safely cal
 
 # FreeRTOS Kernel - Installation
 
-Each real-time kernel port contains three common files and platform-specific files. Find the associated architecture in protable folder of microchip you use.
+Each real-time kernel port contains three common files and platform-specific files. Find the associated architecture in protable folder of chip you use
 
 ### Arduino
 - https://docs.arduino.cc/libraries/freertos/
@@ -290,13 +290,16 @@ xTaskCreate_EDF(
 );
 ```
 
-
 # Project Ideas
 
-## 1. Implementation of Rate Monotonic Scheduling / Priority Inversion / ...
+## 1. Implementation of RMS / LLF / ...
 
-## 2. IoT Data Logger
-Build a data collection device using an ESP32 that reads multiple sensors, stores data locally, and transmits to cloud services via WiFi. FreeRTOS can manage tasks for periodic sensor sampling, data storage, and network communication, ensuring reliable data logging and efficient use of system resources.
+## 2. Implementation to handle priority inversion
+
+## 3. IoT Data Logger
+Build a embeded device using an ESP32/ESP32 that reads sensors, stores data, control LED.
+
+FreeRTOS can manage tasks for periodic sensor sampling, data storage, controlling
 
 
 # Implementation Suggestions
@@ -307,19 +310,20 @@ Build a data collection device using an ESP32 that reads multiple sensors, store
 - Avoid priority inversion scenarios
 
 ## Task Design
-- Keep tasks simple and focused
-- Use appropriate delays to prevent CPU hogging
-- Design for preemption
+- Keep tasks simple and use appropriate delays to prevent CPU hogging
+- Use task not croutine, design for preemption not yield
+
+# Implementation Suggestions
 
 ## Memory Management
 - Choose appropriate heap allocation scheme
-- heap_1 - the very simplest, does not permit memory to be freed.
-- heap_2 - permits memory to be freed, but does not coalescence adjacent free blocks.
-- heap_3 - simply wraps the standard malloc() and free() for thread safety.
-- heap_4 - coalescences adjacent free blocks to avoid fragmentation. Includes absolute address placement option.
-- heap_5 - as per heap_4, with the ability to span the heap across multiple non-adjacent memory areas.
+- heap_1 - the very simplest, does not permit memory to be freed
+- heap_2 - permits memory to be freed, but does not coalescence adjacent free blocks
+- heap_3 - simply wraps the standard malloc() and free() for thread safety
+- heap_4 - coalescences adjacent free blocks to avoid fragmentation. Includes absolute address placement option
+- heap_5 - as per heap_4, with the ability to span the heap across multiple non-adjacent memory areas
 
-# Other open-source RTOS
+# Other Free and Open-source RTOS
 
 ## Zephyr
 
@@ -335,14 +339,14 @@ Build a data collection device using an ESP32 that reads multiple sensors, store
 
 # Reference
 ## FreeRTOS Official Documentation
-[1] FreeRTOS, "FreeRTOS Documentation: Overview," [Online]. Available: https://www.freertos.org/Documentation/00-Overview. [Accessed: Jun. 2024].
+[1] FreeRTOS, "FreeRTOS Documentation: Overview," [Online]. Available: www.freertos.org/Documentation/00-Overview. [Accessed: Jun. 2024].
 
 ## FreeRTOS Kernel
-[2] FreeRTOS, "FreeRTOS Kernel," GitHub repository, https://github.com/FreeRTOS/FreeRTOS-Kernel [Accessed: Jun. 2024].
+[2] FreeRTOS, "FreeRTOS Kernel," GitHub repository, github.com/FreeRTOS/FreeRTOS-Kernel [Accessed: Jun. 2024].
 
 
 ## FreeRTOS on STM32
-[3] "FreeRTOS Tutorial Video Series," YouTube, https://www.youtube.com/watch?v=QGVAayFI5ZQ&list=PLnMKNibPkDnFeFV4eBfDQ9e5IrGL_dx1Q [Accessed: Jun. 2024].
+[3] "FreeRTOS Tutorial Video Series," YouTube, www.youtube.com/watch?v=QGVAayFI5ZQ&list=PLnMKNibPkDnFeFV4eBfDQ9e5IrGL_dx1Q [Accessed: Jun. 2024].
 
 # Questions
 
