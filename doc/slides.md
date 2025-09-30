@@ -58,8 +58,12 @@ https://github.com/No-Chicken/OV-Watch
 # Basic Concepts
 
 ## Tasks
-A task is a function that runs independently and has its own stack. Tasks are the fundamental building blocks of FreeRTOS applications.
+Each runs independently and has its own stack, full API access, preemptive/cooperative scheduling, suitable for most applications.
 
+## Co-routines
+All share one stack (saves RAM), cooperative scheduling only, macro-based implementation, many usage restrictions, rarely used today.
+
+# Basic Concepts
 ## Task States
 - **Running**: Currently executing on the CPU
 - **Ready**: Ready to run but waiting for CPU time
@@ -71,14 +75,9 @@ A task is a function that runs independently and has its own stack. Tasks are th
 ![](fig/tskstate.png){width=70%}
 
 
-# Basic Concepts
+# Basic Concepts - Configuration
 
-## Configuration
-
-```c
-FreeRTOSConfig.h
-```
-contains all configuration options for FreeRTOS
+`FreeRTOSConfig.h` contains all configuration options for FreeRTOS
 
 ```c
 // Enable preemptive scheduling
@@ -95,44 +94,37 @@ contains all configuration options for FreeRTOS
 #define configUSE_MUTEXES                       1
 ```
 
-# Basic Concepts
+# Basic Concepts - Scheduling Algorithms
 
-## Scheduling Algorithms
-**Fixed Priority (Default)**
 
-- Preemptive Priority Scheduling
-- Tasks with higher priority always run first
-- Higher priority tasks preempt lower ones
-- Same priority tasks share CPU time
+## Fixed Priority Preemptive Scheduling
+- Configuration:  `configUSE_PREEMPTION = 1`
+- Higher priority tasks preempt lower priority tasks
+- Same priority tasks share CPU time (Round Robin with time slice)
 
-**Pre-emptive Scheduling**
+## Fixed Priority Cooperative Scheduling
+- Configuration:  `configUSE_PREEMPTION = 0`
+- Tasks voluntarily yield control using `taskYIELD()`
+- No preemption: Tasks run until they explicitly give up CPU
 
-- Higher priority tasks can interrupt (preempt) lower priority tasks
-- Critical tasks run with minimal delay
-
-**Time Slicing (Round Robin)**
-
+## Time Slicing Scheduling
 - Tasks with the same priority share CPU time equally
-- Scheduler switches between these tasks at each tick interrupt
+- Tasks switches between these tasks at each tick interrupt
 
 # Task Management
 
 ## Task Priorities
+- `configMAX_PRIORITIES` defines the maximum priority level in `FreeRTOSConfig.h`
 - Higher numbers = higher priority
-- `configMAX_PRIORITIES` defines the maximum priority level
-- Tasks with the same priority share CPU time (round-robin)
 
 
-# Task Management
+# Task Management - Task Functions
 
-## Task Functions
 ```c
 void ATaskFunction( void *pvParameters );
 ```
 
-# Task Management
-
-## Creating a Task
+# Task Management - Creation
 
 ```c
 void vTaskFunction(void* pvParameters);
@@ -140,37 +132,51 @@ void vTaskFunction(void* pvParameters);
 TaskHandle_t xTaskHandle;
 
 int main(void) {
+    ..
     xTaskCreate(                    // Create a task
         vTaskFunction,              // Task function
-        "TaskName",                 // Task name (for debugging)
+        "TaskName",                 // Task name
         configMINIMAL_STACK_SIZE,   // Stack size
         NULL,                       // Parameters passed to task
         1,                          // Priority (0 = lowest)
         &xTaskHandle                // Task handle
     );
     vTaskStartScheduler();          // Start the scheduler
+    ...
 }
 ```
 
-# Task Management
-## Deleting a Task
+# Task Management - Handling
+
+## Define Task Deletion
 ```c
 void vTaskDelete( TaskHandle_t pxTaskToDelete );
 ```
 
-# Task Management
-## Task Priorities
-- Higher numbers = higher priority
-- `configMAX_PRIORITIES` defines the maximum priority level
-- Tasks with the same priority share CPU time (round-robin)
+## Deleting a Task
+```c
+vTaskDelete(xTaskHandle);           // Delete the task
 
+```
+
+## Other Handler
+```c
+vTaskSuspend(xTaskHandle);          // Suspend the task
+
+vTaskResume(xTaskHandle);           // Resume the task
+
+vTaskPrioritySet(xTaskHandle, 2);   // Change priority
+```
+
+# Task Management
 ## Task Delays
 ```c
 // Delay for a specific number of ticks
 vTaskDelay(pdMS_TO_TICKS(1000));  // Delay for 1000ms
+
 // Delay until a specific time
 TickType_t xLastWakeTime = xTaskGetTickCount();
-vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));  // Periodic delay
+vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));
 ```
 
 
@@ -180,14 +186,29 @@ vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));  // Periodic delay
 
 FreeRTOS provides a set of "Interrupt Safe" API functions that can be safely called from within an Interrupt Service Routine (ISR). These functions are specifically designed to handle the restrictions and requirements of running in an interrupt context.
 
+## Interrupt Safe API Implementation Files
+- `queue.c` - Core interrupt-safe queue and semaphore functions
+- `tasks.c` - Interrupt-safe task notification functions
+- `timers.c` - Interrupt-safe timer functions
+- `stream_buffer.c` - Interrupt-safe stream buffer functions
+
 ## Key Points:
-- **Do NOT call standard FreeRTOS API functions from an ISR.** Use only the versions ending with `FromISR`, such as `xQueueSendFromISR`, `xSemaphoreGiveFromISR`, or `xTaskNotifyFromISR`.
-- These functions are optimized to be fast and safe for use in ISRs, and they often require an extra parameter to indicate if a context switch should be performed after the ISR.
+- **Only use FreeRTOS API functions ending with `FromISR` in ISRs** (e.g., `xQueueSendFromISR`, `xSemaphoreGiveFromISR`).
+- These are safe and fast for ISRs, often needing an extra parameter for context switching.
 
-# FreeRTOS Kernel Structure
-Each real-time kernel port contains three common files and platform-specific files. The FreeRTOS_core directory contains the common kernel components, while the portable directory contains microcontroller/compiler-specific implementations.
 
-# FreeRTOS Kernel Structure
+# FreeRTOS Kernel - Installation
+
+Each real-time kernel port contains three common files and platform-specific files. Find the associated architecture in protable folder of microchip you use.
+
+### Arduino
+- https://docs.arduino.cc/libraries/freertos/
+
+### ESP32
+- https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/freertos.html
+- https://github.com/espressif/esp-idf/tree/v5.5.1/components/freertos
+
+# FreeRTOS Kernel - Structure
 ![](fig/FreeRTOS_arch.png){width=100%}
 
 <!-- # FreeRTOS Kernel Structure
@@ -213,17 +234,6 @@ FreeRTOS Kernel/
 |-- croutine.c                # Co-routines
 |-- event_groups.c            # Event groups
 +-- stream_buffer.c           # Stream buffers -->
-
-# FreeRTOS Kernel Installation
-
-## Find the associated architecture in protable folder of microchip you use 
-
-### Arduino
-- https://docs.arduino.cc/libraries/freertos/
-
-### ESP32
-- https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/freertos.html
-- https://github.com/espressif/esp-idf/tree/v5.5.1/components/freertos
 
 
 # Project Demo - FreeRTOS EDF Scheduling
@@ -291,28 +301,23 @@ Build a data collection device using an ESP32 that reads multiple sensors, store
 
 # Implementation Suggestions
 
-## 1. Stack Sizing
-- Start with `configMINIMAL_STACK_SIZE` and increase if needed
-- Use `uxTaskGetStackHighWaterMark()` to monitor stack usage
-- Consider function call depth and local variables
-
-## 2. Priority Assignment
+## Priority Assignment
 - Use as few priority levels as possible
 - Reserve highest priority for critical tasks
 - Avoid priority inversion scenarios
 
-
-# Implementation Suggestions
-
-## 3. Task Design
+## Task Design
 - Keep tasks simple and focused
 - Use appropriate delays to prevent CPU hogging
 - Design for preemption
 
-## 4. Memory Management
+## Memory Management
 - Choose appropriate heap allocation scheme
-- Monitor heap usage
-- Avoid memory leaks
+- heap_1 - the very simplest, does not permit memory to be freed.
+- heap_2 - permits memory to be freed, but does not coalescence adjacent free blocks.
+- heap_3 - simply wraps the standard malloc() and free() for thread safety.
+- heap_4 - coalescences adjacent free blocks to avoid fragmentation. Includes absolute address placement option.
+- heap_5 - as per heap_4, with the ability to span the heap across multiple non-adjacent memory areas.
 
 # Other open-source RTOS
 
@@ -341,5 +346,5 @@ Build a data collection device using an ESP32 that reads multiple sensors, store
 
 # Questions
 
-## FreeRTOS
-FreeRTOS enables robust real-time embedded systems through effective task management and inter-task communication. For further details, see the official FreeRTOS documentation and project examples.
+## Questions?
+
